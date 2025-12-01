@@ -19,12 +19,14 @@ func main() {
 
 	switch *day {
 	case 1:
-		result, err := day01.Solve(string(data))
+		one, err := day01.PartOne(string(data))
+		two, err := day01.PartTwo(string(data))
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		fmt.Println("Answer: ", result)
+		fmt.Println("Part One: ", one)
+		fmt.Println("Part Two: ", two)
 	default:
 		log.Fatalf("day %d not implemented", *day)
 	}
