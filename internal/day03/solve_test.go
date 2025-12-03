@@ -18,6 +18,19 @@ func TestPartOne(t *testing.T) {
 	}
 }
 
+func TestPartTwo(t *testing.T) {
+	got, err := day03.PartTwo(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := 3121910778619
+
+	if got != want {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+}
+
 var input = `987654321111111
 811111111111119
 234234234234278

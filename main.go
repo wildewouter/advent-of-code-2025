@@ -20,51 +20,31 @@ func main() {
 		log.Fatal(err)
 	}
 
-	start := time.Now()
 	switch *day {
 	case 1:
-		one, err := day01.PartOne(string(data))
-		partOne := time.Since(start)
-		start = time.Now()
-		two, err := day01.PartTwo(string(data))
-		partTwo := time.Since(start)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Println("Part One: ", one)
-		fmt.Println("Time (Part One): ", partOne)
-		fmt.Println("Part Two: ", two)
-		fmt.Println("Time (Part Two): ", partTwo)
+		RunWithTimer(day01.PartOne, day01.PartTwo, string(data))
 	case 2:
-		one, err := day02.PartOne(string(data))
-		partOne := time.Since(start)
-		start = time.Now()
-		two, err := day02.PartTwo(string(data))
-		partTwo := time.Since(start)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Println("Part One: ", one)
-		fmt.Println("Time (Part One): ", partOne)
-		fmt.Println("Part Two: ", two)
-		fmt.Println("Time (Part Two): ", partTwo)
+		RunWithTimer(day02.PartOne, day02.PartTwo, string(data))
 	case 3:
-		one, err := day03.PartOne(string(data))
-		partOne := time.Since(start)
-		//start = time.Now()
-		//two, err := day02.PartTwo(string(data))
-		//partTwo := time.Since(start)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Println("Part One: ", one)
-		fmt.Println("Time (Part One): ", partOne)
-		//fmt.Println("Part Two: ", two)
-		//fmt.Println("Time (Part Two): ", partTwo)
+		RunWithTimer(day03.PartOne, day03.PartTwo, string(data))
 	default:
 		log.Fatalf("day %d not implemented", *day)
 	}
+}
+
+func RunWithTimer(partOneFn func(string) (int, error), partTwoFn func(string) (int, error), data string) {
+	start := time.Now()
+	one, err := partOneFn(data)
+	partOne := time.Since(start)
+	start = time.Now()
+	two, err := partTwoFn(data)
+	partTwo := time.Since(start)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Part One: ", one)
+	fmt.Println("Time (Part One): ", partOne)
+	fmt.Println("Part Two: ", two)
+	fmt.Println("Time (Part Two): ", partTwo)
 }

@@ -6,7 +6,16 @@ import (
 )
 
 func PartOne(input string) (int, error) {
+	return doIt(input, 2)
+}
+
+func PartTwo(input string) (int, error) {
+	return doIt(input, 12)
+}
+
+func doIt(input string, amount int) (int, error) {
 	lines := strings.Split(input, "\n")
+
 	var banksJoltages []int
 
 	for _, bank := range lines {
@@ -20,10 +29,22 @@ func PartOne(input string) (int, error) {
 			parsedBank = append(parsedBank, v)
 		}
 
-		result := MaxWithIndex(parsedBank[:len(parsedBank)-1])
-		result2 := MaxWithIndex(parsedBank[result.index+1:])
+		var joltages []string
+		position := 0
+		for i := 0; i < amount; i++ {
+			end := len(parsedBank) - amount + len(joltages) + 1
+			result := MaxWithIndex(parsedBank[position:end])
+			joltages = append(joltages, strconv.Itoa(result.max))
+			position = position + result.index + 1
+		}
 
-		joltage, err := strconv.Atoi(strconv.Itoa(result.max) + strconv.Itoa(result2.max))
+		result := ""
+
+		for _, j := range joltages {
+			result += j
+		}
+
+		joltage, err := strconv.Atoi(result)
 
 		if err != nil {
 			return 0, err
