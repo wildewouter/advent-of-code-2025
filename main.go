@@ -6,6 +6,7 @@ import (
 	"advent-of-code-2025/internal/day03"
 	"advent-of-code-2025/internal/day04"
 	"advent-of-code-2025/internal/day05"
+	"advent-of-code-2025/internal/day06"
 	"flag"
 	"fmt"
 	"log"
@@ -33,6 +34,8 @@ func main() {
 		RunWithTimer(day04.PartOne, day04.PartTwo, string(data))
 	case 5:
 		RunWithTimer(day05.PartOne, day05.PartTwo, string(data))
+	case 6:
+		RunWithTimer(day06.PartOne, day06.PartTwo, string(data))
 	default:
 		log.Fatalf("day %d not implemented", *day)
 	}
