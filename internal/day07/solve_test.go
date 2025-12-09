@@ -24,7 +24,7 @@ func TestPartTwo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want := 0
+	want := 40
 
 	if got != want {
 		t.Fatalf("got %v, want %v", got, want)
