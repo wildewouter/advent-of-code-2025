@@ -14,17 +14,22 @@ func PartOne(input string) (int, error) {
 		return 0, err
 	}
 
-	var circuits [][]Coord
+	var circuits []Set[Coord]
 
 	for _, coord := range coords {
-		if isAlreadyPresentInCircuits(coord, circuits) {
-			continue
-		}
-		minimal := closest(coord, coords)
-		circuits = insert([2]Coord{minimal, coord}, circuits)
+		c, _ := closest(coord, coords)
+		circuits = insert([2]Coord{coord, c}, circuits)
 	}
 
-	slices.SortFunc(circuits, func(a, b []Coord) int {
+	circuitList := make([][]Coord, len(circuits))
+
+	for i, circuit := range circuits {
+		for coord := range circuit {
+			circuitList[i] = append(circuitList[i], coord)
+		}
+	}
+
+	slices.SortFunc(circuitList, func(a, b []Coord) int {
 		return len(b) - len(a)
 	})
 
@@ -41,50 +46,76 @@ func PartTwo(input string) (int, error) {
 	return 0, nil
 }
 
-func isAlreadyPresentInCircuits(coord Coord, circuits [][]Coord) bool {
-	for _, circuit := range circuits {
-		if slices.Contains(circuit, coord) {
-			return true
-		}
-	}
-	return false
+//func isAlreadyPresentInCircuits(coord Coord, circuits [][]Coord) bool {
+//	for _, circuit := range circuits {
+//		if slices.Contains(circuit, coord) {
+//			return true
+//		}
+//	}
+//	return false
+//}
+
+type Set[T comparable] map[T]struct{}
+
+func (s Set[T]) insert(v T) Set[T] {
+	s[v] = struct{}{}
+	return s
 }
 
-func insert(coords [2]Coord, circuits [][]Coord) [][]Coord {
+func insert(coords [2]Coord, circuits []Set[Coord]) []Set[Coord] {
+	var indicesContaining []int
+
 	for i, circuit := range circuits {
-		if slices.Contains(circuit, coords[0]) {
-			circuits[i] = append(circuits[i], coords[1])
-			return circuits
-		}
-		if slices.Contains(circuit, coords[1]) {
-			circuits[i] = append(circuits[i], coords[0])
-			return circuits
+		for _, coord := range coords {
+			_, contains := circuit[coord]
+			if contains {
+				indicesContaining = append(indicesContaining, i)
+			}
 		}
 	}
 
-	return append(circuits, []Coord{coords[0], coords[1]})
+	switch len(indicesContaining) {
+	case 0:
+		return append(circuits, map[Coord]struct{}{coords[0]: {}})
+	case 1:
+		circuits[indicesContaining[0]].insert(coords[0])
+		circuits[indicesContaining[0]].insert(coords[1])
+		return circuits
+	default:
+		mergedCircuit := Set[Coord]{}
+
+		for _, i := range indicesContaining {
+			for c := range circuits[i] {
+				mergedCircuit.insert(c)
+			}
+		}
+
+		mergedCircuit.insert(coords[0])
+		mergedCircuit.insert(coords[1])
+
+		for _, i := range indicesContaining {
+			circuits = append(circuits[:i], circuits[i+1:]...)
+		}
+
+		return append(circuits, mergedCircuit)
+	}
 }
 
-func closest(coord Coord, coords []Coord) Coord {
-	distances := make(map[Coord]int)
-
+func closest(coord Coord, coords []Coord) (Coord, int) {
+	var closestC Coord
+	var minDist int
 	for _, c := range coords {
 		if c == coord {
 			continue
 		}
-		distances[c] = distanceSquared(coord, c)
-	}
-
-	var closestC Coord
-	var minDist int
-	for c, d := range distances {
-		if minDist == 0 || d < minDist {
-			minDist = d
+		dist := distanceSquared(coord, c)
+		if minDist == 0 || dist < minDist {
+			minDist = dist
 			closestC = c
 		}
 	}
 
-	return closestC
+	return closestC, minDist
 }
 
 func distanceSquared(a, b Coord) int {
