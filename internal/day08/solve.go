@@ -41,27 +41,21 @@ func getAnswer(closestPairs PairingList) int {
 }
 
 func getPairs(coords []Coord) PairingList {
-	var closestPairs PairingList
+	var literallyAllPairs PairingList
 
 	for _, coord := range coords {
-		var closeCoord Coord
-		var minDist int
 		for _, c := range coords {
-			contains := closestPairs.contains(Pairing{coord, c, minDist})
+			contains := literallyAllPairs.contains(Pairing{coord, c, 0})
 			if c == coord || contains {
 				continue
 			}
 			dist := distanceSquared(coord, c)
-			if minDist == 0 || dist < minDist {
-				minDist = dist
-				closeCoord = c
-			}
-		}
 
-		closestPairs = append(closestPairs, Pairing{coord, closeCoord, minDist})
+			literallyAllPairs = append(literallyAllPairs, Pairing{coord, c, dist})
+		}
 	}
-	closestPairs.sortByDistance()
-	return closestPairs
+	literallyAllPairs.sortByDistance()
+	return literallyAllPairs
 }
 
 func PartTwo(input string) (int, error) {

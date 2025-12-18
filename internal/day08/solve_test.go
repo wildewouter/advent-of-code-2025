@@ -2,14 +2,11 @@ package day08_test
 
 import (
 	"advent-of-code-2025/internal/day08"
-	"os"
 	"testing"
 )
 
 func TestPartOne(t *testing.T) {
-	data, err := os.ReadFile("../../input/day8.txt")
-
-	got, err := day08.PartOne(string(data))
+	got, err := day08.PartOne(input)
 	if err != nil {
 		t.Fatal(err)
 	}
