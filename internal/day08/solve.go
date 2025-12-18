@@ -13,23 +13,21 @@ func PartOne(input string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	closestPairs := getPairs(coords)
 
+	answer := getAnswer(closestPairs[:1000])
+
+	return answer, nil
+}
+
+func getAnswer(closestPairs PairingList) int {
 	var circuits []Set[Coord]
 
-	for _, coord := range coords {
-		c, _ := closest(coord, coords)
-		circuits = insert([2]Coord{coord, c}, circuits)
+	for _, pair := range closestPairs {
+		circuits = insert(pair, circuits)
 	}
 
-	circuitList := make([][]Coord, len(circuits))
-
-	for i, circuit := range circuits {
-		for coord := range circuit {
-			circuitList[i] = append(circuitList[i], coord)
-		}
-	}
-
-	slices.SortFunc(circuitList, func(a, b []Coord) int {
+	slices.SortFunc(circuits, func(a, b Set[Coord]) int {
 		return len(b) - len(a)
 	})
 
@@ -39,21 +37,49 @@ func PartOne(input string) (int, error) {
 		answer *= len(circuit)
 	}
 
-	return answer, nil
+	return answer
+}
+
+func getPairs(coords []Coord) PairingList {
+	var closestPairs PairingList
+
+	for _, coord := range coords {
+		var closeCoord Coord
+		var minDist int
+		for _, c := range coords {
+			contains := closestPairs.contains(Pairing{coord, c, minDist})
+			if c == coord || contains {
+				continue
+			}
+			dist := distanceSquared(coord, c)
+			if minDist == 0 || dist < minDist {
+				minDist = dist
+				closeCoord = c
+			}
+		}
+
+		closestPairs = append(closestPairs, Pairing{coord, closeCoord, minDist})
+	}
+	closestPairs.sortByDistance()
+	return closestPairs
 }
 
 func PartTwo(input string) (int, error) {
 	return 0, nil
 }
 
-//func isAlreadyPresentInCircuits(coord Coord, circuits [][]Coord) bool {
-//	for _, circuit := range circuits {
-//		if slices.Contains(circuit, coord) {
-//			return true
-//		}
-//	}
-//	return false
-//}
+type Pairing struct {
+	a        Coord
+	b        Coord
+	distance int
+}
+
+type PairingList []Pairing
+
+func (l PairingList) sortByDistance() PairingList {
+	slices.SortFunc(l, func(a, b Pairing) int { return a.distance - b.distance })
+	return l
+}
 
 type Set[T comparable] map[T]struct{}
 
@@ -61,61 +87,64 @@ func (s Set[T]) insert(v T) Set[T] {
 	s[v] = struct{}{}
 	return s
 }
+func (s Set[T]) contains(v T) bool {
+	_, ok := s[v]
+	return ok
+}
 
-func insert(coords [2]Coord, circuits []Set[Coord]) []Set[Coord] {
-	var indicesContaining []int
+func (s Set[T]) items() []T {
+	var items []T
+	for item := range s {
+		items = append(items, item)
+	}
+	return items
+}
+
+func insert(pair Pairing, circuits []Set[Coord]) []Set[Coord] {
+	indicesContaining := Set[int]{}
 
 	for i, circuit := range circuits {
-		for _, coord := range coords {
-			_, contains := circuit[coord]
-			if contains {
-				indicesContaining = append(indicesContaining, i)
+		for _, coord := range [2]Coord{pair.a, pair.b} {
+			if circuit.contains(coord) {
+				indicesContaining.insert(i)
 			}
 		}
 	}
 
 	switch len(indicesContaining) {
 	case 0:
-		return append(circuits, map[Coord]struct{}{coords[0]: {}})
+		return append(circuits, Set[Coord]{pair.a: {}, pair.b: {}})
 	case 1:
-		circuits[indicesContaining[0]].insert(coords[0])
-		circuits[indicesContaining[0]].insert(coords[1])
+		for i := range indicesContaining {
+			circuits[i].insert(pair.a)
+			circuits[i].insert(pair.b)
+		}
+
 		return circuits
 	default:
 		mergedCircuit := Set[Coord]{}
 
-		for _, i := range indicesContaining {
+		for i := range indicesContaining {
 			for c := range circuits[i] {
 				mergedCircuit.insert(c)
 			}
 		}
 
-		mergedCircuit.insert(coords[0])
-		mergedCircuit.insert(coords[1])
+		indices := indicesContaining.items()
 
-		for _, i := range indicesContaining {
+		slices.SortFunc(indices, func(a, b int) int { return b - a })
+
+		for _, i := range indices {
+			if len(circuits)-1 <= i {
+				circuits = circuits[:i]
+				continue
+			}
+
 			circuits = append(circuits[:i], circuits[i+1:]...)
 		}
 
 		return append(circuits, mergedCircuit)
 	}
-}
-
-func closest(coord Coord, coords []Coord) (Coord, int) {
-	var closestC Coord
-	var minDist int
-	for _, c := range coords {
-		if c == coord {
-			continue
-		}
-		dist := distanceSquared(coord, c)
-		if minDist == 0 || dist < minDist {
-			minDist = dist
-			closestC = c
-		}
-	}
-
-	return closestC, minDist
 }
 
 func distanceSquared(a, b Coord) int {
@@ -139,4 +168,18 @@ func getCoords(lines []string) ([]Coord, error) {
 		coords = append(coords, [3]int{x, y, z})
 	}
 	return coords, nil
+}
+
+func (l PairingList) contains(p Pairing) bool {
+	contains := false
+
+	for _, pairing := range l {
+		contains = pairing.a == p.a && pairing.b == p.b || pairing.a == p.b && pairing.b == p.a
+
+		if contains {
+			return contains
+		}
+	}
+
+	return contains
 }
