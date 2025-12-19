@@ -15,15 +15,9 @@ func PartOne(input string) (int, error) {
 	}
 	closestPairs := getPairs(coords)
 
-	answer := getAnswer(closestPairs[:1000])
-
-	return answer, nil
-}
-
-func getAnswer(closestPairs PairingList) int {
 	var circuits []Set[Coord]
 
-	for _, pair := range closestPairs {
+	for _, pair := range closestPairs[:1000] {
 		circuits = insert(pair, circuits)
 	}
 
@@ -37,7 +31,36 @@ func getAnswer(closestPairs PairingList) int {
 		answer *= len(circuit)
 	}
 
-	return answer
+	return answer, nil
+}
+
+func PartTwo(input string) (int, error) {
+	lines := strings.Split(input, "\n")
+
+	coords, err := getCoords(lines)
+	if err != nil {
+		return 0, err
+	}
+	closestPairs := getPairs(coords)
+
+	var circuits []Set[Coord]
+
+	var answer int
+
+pairLoop:
+	for _, pair := range closestPairs {
+		circuits = insert(pair, circuits)
+
+		for _, circuit := range circuits {
+			if len(circuit) == len(coords) {
+				answer = pair.a[0] * pair.b[0]
+				break pairLoop
+			}
+			break
+		}
+	}
+
+	return answer, nil
 }
 
 func getPairs(coords []Coord) PairingList {
@@ -56,10 +79,6 @@ func getPairs(coords []Coord) PairingList {
 	}
 	literallyAllPairs.sortByDistance()
 	return literallyAllPairs
-}
-
-func PartTwo(input string) (int, error) {
-	return 0, nil
 }
 
 type Pairing struct {
